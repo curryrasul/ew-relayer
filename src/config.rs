@@ -4,33 +4,6 @@ use std::env;
 
 use dotenv::dotenv;
 
-pub(crate) enum ImapAuthType {
-    Password {
-        user_id: String,
-        password: String,
-    },
-    Oauth {
-        user_id: String,
-        client_id: String,
-        client_secret: String,
-        auth_url: String,
-        token_url: String,
-        redirect_url: String,
-    },
-}
-
-pub(crate) struct ImapConfig {
-    pub(crate) imap_domain_name: String,
-    pub(crate) imap_port: u16,
-    pub(crate) imap_auth_type: ImapAuthType,
-}
-
-pub(crate) struct SmtpConfig {
-    pub(crate) smtp_domain_name: String,
-    pub(crate) id: String,
-    pub(crate) password: String,
-}
-
 pub struct RelayerConfig {
     pub(crate) imap_config: ImapConfig,
     pub(crate) smtp_config: SmtpConfig,
@@ -46,11 +19,11 @@ impl RelayerConfig {
 
         let imap_auth_type = env::var(IMAP_AUTH_TYPE_KEY).unwrap();
         let imap_auth_type = match &*imap_auth_type {
-            "password" => ImapAuthType::Password {
+            "password" => ImapAuth::Password {
                 user_id: env::var(LOGIN_ID_KEY).unwrap(),
                 password: env::var(LOGIN_PASSWORD_KEY).unwrap(),
             },
-            "oauth" => ImapAuthType::Oauth {
+            "oauth" => ImapAuth::Oauth {
                 user_id: env::var(LOGIN_ID_KEY).unwrap(),
                 client_id: env::var(IMAP_CLIENT_ID_KEY).unwrap(),
                 client_secret: env::var(IMAP_CLIENT_SECRET_KEY).unwrap(),
@@ -58,7 +31,7 @@ impl RelayerConfig {
                 token_url: env::var(IMAP_TOKEN_URL_KEY).unwrap(),
                 redirect_url: env::var(IMAP_REDIRECT_URL_KEY).unwrap(),
             },
-            _ => panic!(),
+            _ => panic!("{WRONG_AUTH_METHOD}"),
         };
 
         let imap_config = ImapConfig {

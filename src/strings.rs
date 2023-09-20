@@ -1,3 +1,4 @@
+// Config strings
 pub const ZK_EMAIL_PATH_KEY: &str = "LOCAL_ZK_EMAIL_CIRCOM_PATH";
 pub const INCOMING_EML_PATH: &str = "MODAL_INCOMING_EML_PATH";
 pub const IMAP_DOMAIN_NAME_KEY: &str = "IMAP_DOMAIN_NAME";
@@ -13,3 +14,6 @@ pub const SMTP_PORT_KEY: &str = "SMTP_PORT";
 pub const LOGIN_ID_KEY: &str = "LOGIN_ID";
 pub const LOGIN_PASSWORD_KEY: &str = "LOGIN_PASSWORD";
 pub const ETHERSCAN_KEY: &str = "ETHERSCAN_KEY";
+
+// Error strings
+pub const WRONG_AUTH_METHOD: &str = "Not supported auth type";

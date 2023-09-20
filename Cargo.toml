@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
 sled = "0.34.2"
-imap = "3.0.0-alpha.10"
-lettre = "0.10.4"
 anyhow = "1.0.75"
-oauth2 = "4.3.0"
 dotenv = "0.15.0"
+async-imap = "0.9.1"
+oauth2 = "4.3.0"
+tokio-native-tls = "0.3.1"

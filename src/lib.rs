@@ -1,10 +1,13 @@
 pub mod config;
+pub(crate) mod imap_client;
+pub(crate) mod smtp_client;
 pub(crate) mod strings;
 
-pub use config::*;
-pub use strings::*;
+pub(crate) use imap_client::*;
+pub(crate) use smtp_client::*;
+pub(crate) use strings::*;
 
-// use std::*;
+pub use config::*;
 
 use anyhow::Result;
 
