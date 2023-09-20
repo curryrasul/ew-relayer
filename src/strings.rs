@@ -17,3 +17,4 @@ pub const ETHERSCAN_KEY: &str = "ETHERSCAN_KEY";
 
 // Error strings
 pub const WRONG_AUTH_METHOD: &str = "Not supported auth type";
+pub const IMAP_RECONNECT_ERROR: &str = "Failed to reconnect";
