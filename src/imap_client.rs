@@ -3,6 +3,7 @@ use crate::*;
 use std::net::TcpStream;
 
 use anyhow::{anyhow, Result};
+use imap::types::Fetches;
 use imap::Session;
 use native_tls::TlsStream;
 use oauth2::reqwest::http_client;
@@ -87,12 +88,23 @@ impl ImapClient {
                     .set_pkce_challenge(pkce_challenge)
                     .url();
 
+                let server = tiny_http::Server::http("127.0.0.1:8000").unwrap();
+                webbrowser::open(auth_url.as_ref())?;
+                let request = server.recv()?;
+                let url = request.url().to_string();
+                let auth_code = url.split("code=").collect::<Vec<&str>>()[1]
+                    .split('&')
+                    .next()
+                    .unwrap_or("");
+                let response =
+                    tiny_http::Response::from_string("You can close this window now.".to_string());
+                request.respond(response).unwrap();
+
                 let mut auth_code = String::new();
                 std::io::stdin().read_line(&mut auth_code)?;
 
                 let token_result = oauth_client
                     .exchange_code(AuthorizationCode::new(auth_code))
-                    // Set the PKCE code verifier.
                     .set_pkce_verifier(pkce_verifier)
                     .request(http_client)?;
 
@@ -110,6 +122,51 @@ impl ImapClient {
         session.select("INBOX")?;
 
         Ok(Self { session, config })
+    }
+
+    pub(crate) fn retrieve_new_emails(&mut self) -> Result<Vec<Fetches>> {
+        self.wait_new_email()?;
+        loop {
+            match self.session.uid_search("UNSEEN") {
+                Ok(uids) => {
+                    let mut fetches = vec![];
+                    for (idx, uid) in uids.into_iter().enumerate() {
+                        println!("uid {}", uid);
+                        let fetched = self
+                            .session
+                            .uid_fetch(uid.to_string(), "(BODY[] ENVELOPE)")?;
+                        fetches.push(fetched);
+                    }
+                    return Ok(fetches);
+                }
+                Err(e) => {
+                    println!("Connection reset, reconnecting...");
+                    self.reconnect()?;
+                }
+            }
+        }
+    }
+
+    fn wait_new_email(&mut self) -> Result<()> {
+        loop {
+            let mut flag = false;
+            let result = self.session.idle().wait_while(|response| {
+                if matches!(response, imap::types::UnsolicitedResponse::Exists(_)) {
+                    flag = true;
+                    return false;
+                }
+                true
+            });
+
+            if result.is_err() {
+                self.reconnect()?;
+                continue;
+            }
+
+            if flag {
+                return Ok(());
+            }
+        }
     }
 
     fn reconnect(&mut self) -> Result<()> {
