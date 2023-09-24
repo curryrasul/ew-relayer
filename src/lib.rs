@@ -33,11 +33,18 @@ pub async fn run(config: RelayerConfig) -> Result<()> {
         });
     */
 
-    let receiver = tokio::task::spawn_blocking(|| imap_client::ImapClient::new(config.imap_config));
-    let sender = tokio::task::spawn_blocking(|| smtp_client::SmtpClient::new(config.smtp_config));
+    let mut receiver =
+        tokio::task::spawn_blocking(|| imap_client::ImapClient::new(config.imap_config)).await??;
 
-    let _ = tokio::join!(receiver, sender);
-    println!("Sender and receiver connected succesfully");
+    let v = tokio::task::spawn_blocking(move || receiver.retrieve_new_emails()).await??;
+    println!("Got new message!");
+    for mail in v {
+        for m in mail.iter() {
+            if let Some(b) = m.body() {
+                println!("{}", String::from_utf8(b.to_vec()).unwrap());
+            }
+        }
+    }
 
     Ok(())
 }

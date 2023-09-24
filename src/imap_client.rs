@@ -100,11 +100,10 @@ impl ImapClient {
                     tiny_http::Response::from_string("You can close this window now.".to_string());
                 request.respond(response).unwrap();
 
-                let mut auth_code = String::new();
-                std::io::stdin().read_line(&mut auth_code)?;
+                println!("Auth Code that I captured {}", auth_code);
 
                 let token_result = oauth_client
-                    .exchange_code(AuthorizationCode::new(auth_code))
+                    .exchange_code(AuthorizationCode::new(auth_code.to_string()))
                     .set_pkce_verifier(pkce_verifier)
                     .request(http_client)?;
 
@@ -118,7 +117,7 @@ impl ImapClient {
             }
         }?;
 
-        session.debug = true;
+        // session.debug = true;
         session.select("INBOX")?;
 
         Ok(Self { session, config })

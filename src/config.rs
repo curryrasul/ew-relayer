@@ -29,7 +29,7 @@ impl RelayerConfig {
                 client_secret: env::var(IMAP_CLIENT_SECRET_KEY).unwrap(),
                 auth_url: env::var(IMAP_AUTH_URL_KEY).unwrap(),
                 token_url: env::var(IMAP_TOKEN_URL_KEY).unwrap(),
-                redirect_url: env::var(IMAP_REDIRECT_URL_KEY).unwrap(),
+                redirect_url: IMAP_REDIRECT_URL_KEY.to_string(),
             },
             _ => panic!("{WRONG_AUTH_METHOD}"),
         };
