@@ -14,7 +14,7 @@ pub use config::*;
 
 use anyhow::Result;
 
-pub async fn run(_config: RelayerConfig) -> Result<()> {
+pub async fn run(config: RelayerConfig) -> Result<()> {
     /*
         (tx, rx) = mpsc::new(100)
         first = task::spawn({
@@ -32,5 +32,12 @@ pub async fn run(_config: RelayerConfig) -> Result<()> {
             }
         });
     */
+
+    let receiver = tokio::task::spawn_blocking(|| imap_client::ImapClient::new(config.imap_config));
+    let sender = tokio::task::spawn_blocking(|| smtp_client::SmtpClient::new(config.smtp_config));
+
+    let _ = tokio::join!(receiver, sender);
+    println!("Sender and receiver connected succesfully");
+
     Ok(())
 }

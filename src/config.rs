@@ -41,7 +41,7 @@ impl RelayerConfig {
         };
 
         let smtp_config = SmtpConfig {
-            smtp_domain_name: env::var(SMTP_DOMAIN_NAME_KEY).unwrap(),
+            domain_name: env::var(SMTP_DOMAIN_NAME_KEY).unwrap(),
             id: env::var(LOGIN_ID_KEY).unwrap(),
             password: env::var(LOGIN_PASSWORD_KEY).unwrap(),
         };
