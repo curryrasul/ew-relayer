@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use crate::*;
 
 use sled::Db;
@@ -7,7 +9,7 @@ pub(crate) struct Database {
 }
 
 impl Database {
-    pub(crate) fn open(path: &str) -> Result<Self> {
+    pub(crate) fn open(path: &Path) -> Result<Self> {
         let db = sled::open(path)?;
         Ok(Database { db })
     }
@@ -20,5 +22,9 @@ impl Database {
                 Ok(message_id.to_string())
             }
         }
+    }
+
+    pub(crate) fn get_unhandled_emails(&self) -> Result<Vec<String>> {
+        todo!()
     }
 }

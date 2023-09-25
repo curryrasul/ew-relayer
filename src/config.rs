@@ -1,16 +1,15 @@
 use crate::*;
 
-use std::env;
+use std::{env, path::PathBuf};
 
 use dotenv::dotenv;
 
 pub struct RelayerConfig {
     pub(crate) imap_config: ImapConfig,
     pub(crate) smtp_config: SmtpConfig,
-
-    pub(crate) circom_prover_path: String,
-
+    pub(crate) circom_prover_path: PathBuf,
     pub(crate) etherscan_key: String,
+    pub(crate) db_path: PathBuf,
 }
 
 impl RelayerConfig {
@@ -49,9 +48,9 @@ impl RelayerConfig {
         Self {
             imap_config,
             smtp_config,
-
-            circom_prover_path: env::var(ZK_EMAIL_PATH_KEY).unwrap(),
+            circom_prover_path: env::var(ZK_EMAIL_PATH_KEY).unwrap().into(),
             etherscan_key: env::var(ETHERSCAN_KEY).unwrap(),
+            db_path: env::var(DATABASE_PATH_KEY).unwrap().into(),
         }
     }
 }

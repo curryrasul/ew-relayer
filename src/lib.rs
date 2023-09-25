@@ -19,35 +19,20 @@ pub use config::*;
 
 use anyhow::{anyhow, Result};
 
-const MAX_CHANNEL_LENGTH: usize = 250;
-
 pub async fn run(config: RelayerConfig) -> Result<()> {
-    /*
-        (tx, rx) = mpsc::new(100)
-        first = task::spawn({
-            spawn_blocking(imap::new())
-            loop {
-                new_email = spawn_blocking(imap.wait_new_email).await
-                tx.send(new_email)
-            }
-        });
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
 
-        second = tokio::spawn({
-            loop {
-                new_email = rx.recv().await;
-                tokio::spawn({ handle_email(new_email).await })
-            }
-        });
-    */
-
-    let (tx, mut rx) = tokio::sync::mpsc::channel(MAX_CHANNEL_LENGTH);
+    let mut db = Database::open(&config.db_path)?;
+    for email in db.get_unhandled_emails()? {
+        tx.send(email);
+    }
 
     let email_receiver_task = tokio::task::spawn(async move {
         let mut email_receiver = ImapClient::new(config.imap_config)?;
         loop {
             let emails = email_receiver.retrieve_new_emails()?;
             for email in emails {
-                tx.send(email).await?;
+                tx.send(email)?;
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -59,7 +44,7 @@ pub async fn run(config: RelayerConfig) -> Result<()> {
                 .recv()
                 .await
                 .ok_or(anyhow!(CANNOT_GET_EMAIL_FROM_QUEUE))?;
-            handle_email().await?
+            tokio::task::spawn(handle_email());
         }
         Ok::<(), anyhow::Error>(())
     });
@@ -70,5 +55,6 @@ pub async fn run(config: RelayerConfig) -> Result<()> {
 }
 
 async fn handle_email() -> Result<()> {
+    get_latest_block_number().await?;
     todo!()
 }
