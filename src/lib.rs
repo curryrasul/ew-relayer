@@ -3,11 +3,13 @@
 
 pub(crate) mod chain;
 pub mod config;
+pub(crate) mod database;
 pub(crate) mod imap_client;
 pub(crate) mod smtp_client;
 pub(crate) mod strings;
 
 pub(crate) use chain::*;
+pub(crate) use database::*;
 pub(crate) use imap_client::*;
 pub(crate) use smtp_client::*;
 pub(crate) use strings::*;

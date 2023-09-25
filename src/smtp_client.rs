@@ -1,6 +1,6 @@
 use crate::*;
 
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use lettre::{
     message::{
         header::{Cc, From, Header, HeaderName, InReplyTo, ReplyTo, To},

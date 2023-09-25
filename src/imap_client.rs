@@ -2,7 +2,7 @@ use crate::*;
 
 use std::net::TcpStream;
 
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use imap::types::Fetches;
 use imap::Session;
 use native_tls::TlsStream;
