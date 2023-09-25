@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+#![allow(unreachable_code)]
 
 pub(crate) mod chain;
 pub mod config;
@@ -16,7 +17,9 @@ pub(crate) use strings::*;
 
 pub use config::*;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+
+const MAX_CHANNEL_LENGTH: usize = 250;
 
 pub async fn run(config: RelayerConfig) -> Result<()> {
     /*
@@ -37,21 +40,35 @@ pub async fn run(config: RelayerConfig) -> Result<()> {
         });
     */
 
-    // let mut receiver =
-    //     tokio::task::spawn_blocking(|| imap_client::ImapClient::new(config.imap_config)).await??;
+    let (tx, mut rx) = tokio::sync::mpsc::channel(MAX_CHANNEL_LENGTH);
 
-    // let v = tokio::task::spawn_blocking(move || receiver.retrieve_new_emails()).await??;
-    // println!("Got new message!");
-    // for mail in v {
-    //     for m in mail.iter() {
-    //         if let Some(b) = m.body() {
-    //             println!("{}", String::from_utf8(b.to_vec()).unwrap());
-    //         }
-    //     }
-    // }
+    let email_receiver_task = tokio::task::spawn(async move {
+        let mut email_receiver = ImapClient::new(config.imap_config)?;
+        loop {
+            let emails = email_receiver.retrieve_new_emails()?;
+            for email in emails {
+                tx.send(email).await?;
+            }
+        }
+        Ok::<(), anyhow::Error>(())
+    });
 
-    let b = chain::get_latest_block_number().await?;
-    println!("{b}");
+    let email_handler_task = tokio::task::spawn(async move {
+        loop {
+            let email = rx
+                .recv()
+                .await
+                .ok_or(anyhow!(CANNOT_GET_EMAIL_FROM_QUEUE))?;
+            handle_email().await?
+        }
+        Ok::<(), anyhow::Error>(())
+    });
+
+    let _ = tokio::join!(email_receiver_task, email_handler_task);
 
     Ok(())
+}
+
+async fn handle_email() -> Result<()> {
+    todo!()
 }
