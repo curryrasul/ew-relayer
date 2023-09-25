@@ -1,6 +1,5 @@
 use crate::*;
 
-use anyhow::Result;
 use ethers::prelude::*;
 
 pub(crate) async fn get_latest_block_number() -> Result<U64> {
